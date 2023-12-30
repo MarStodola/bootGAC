@@ -4,57 +4,6 @@ import numpy as np
 from pyganja import *
 
 
-def init_base_matrix():
-    base_matrix = np.zeros([8, 8])
-    for i in range(0, 8):
-        base_matrix[i, 7 - i] = -1
-    base_matrix[3, 3] = 1
-    base_matrix[4, 4] = 1
-    base_matrix[3, 4] = 0
-    base_matrix[4, 3] = 0
-    return base_matrix
-
-
-def points_close_to_horizontal_ellipse(a, b, u, v):
-    points = []
-    x = u - a + 1e-4
-    d = 2 * a / 15
-    while x < u + a - 1e-4:
-        y = np.sqrt(1 - (x - u) ** 2 / a ** 2) * b + v
-        # points.append(p_vector(x + 0.01 * np.random.random(), y + 0.01 * np.random.random()))
-        points.append(p_vector(x, y))
-        x += d
-    return np.array(points)
-
-
-def init_p_matrix(points_natrix):
-    p_matrix = np.zeros([8, 8])
-    l = len(points_natrix[0])
-    for i in range(0, len(points_natrix)):
-        p_matrix += np.matmul(points_natrix[i].reshape(l, 1), points_natrix[i].reshape(1, l))
-    b_matrix = init_base_matrix()
-    p_matrix = np.matmul(b_matrix, np.matmul(p_matrix, b_matrix))
-    return p_matrix
-
-
-def p_vector(x, y):
-    return np.array([0, 0, 1, x, y, 0.5 * (x ** 2 + y ** 2), 0.5 * (x ** 2 - y ** 2), x * y])
-
-
-def conic_of_matrix_p(p_matrix):
-    p_0_inv = np.linalg.inv(p_matrix[:2, :2])
-    p_1 = p_matrix[:2, 2:6]
-    p_c = p_matrix[2:6, 2:6]
-    b_c = init_base_matrix()[2:6, 2:6]
-    p_con = np.matmul(b_c, p_c - np.matmul(p_1.transpose(), np.matmul(p_0_inv, p_1)))
-    eig_vals_and_vecs = np.linalg.eig(p_con)
-    vals = eig_vals_and_vecs[0]
-    index_of_eig_value = np.where(vals == vals[np.where(vals >= 0)[0]].min())[0][0]
-    eig_vec = eig_vals_and_vecs[1][:, index_of_eig_value]
-    w_vec = -np.matmul(p_0_inv, np.matmul(p_1, eig_vec))
-    return eig_vec, w_vec
-
-
 def from_pm_to_inf0(p: float, m: float) -> tuple:
     return 0.5 * (p + m), m - p
 
